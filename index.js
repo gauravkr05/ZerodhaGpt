@@ -9,31 +9,66 @@ const server = new McpServer({
   version: "1.0.0"
 });
 server.registerTool(
-    "BUY a Stock",
-    {
-      description: "Buy a stock with a quantity in real time",
-      inputSchema: { stock: z.string(),quantity: z.number() }
-    },
-    async ({stock,quantity }) => {
-       await placeOrder(stock,"BUY",quantity);
+  "BUYStock",
+  {
+    description: "Buy a stock with a quantity in real time",
+    inputSchema: { stock: z.string(), quantity: z.number() }
+  },
+  async ({ stock, quantity }) => {
+    const result = await placeOrder(stock, "BUY", quantity);
+
+    if (result.success) {
       return {
-        content: [{ type: "text", text: "order placed successfully" }]
+        content: [
+          {
+            type: "text",
+            text: `✅ Order placed successfully. Order ID: ${result.order_id}`
+          }
+        ]
+      };
+    } else {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `❌ Order failed: ${result.error}`
+          }
+        ]
       };
     }
-  );
-  server.registerTool(
-    "SELL a Stock",
-    {
-      description: "Selling a stock with a quantity in real time",
-      inputSchema: { stock: z.string(),quantity: z.number() }
-    },
-    async ({ stock,quantity }) => {
-      await placeOrder(stock,"SELL",quantity);
+  }
+);
+
+server.registerTool(
+  "SELLStock",
+  {
+    description: "Sell a stock with a quantity in real time",
+    inputSchema: { stock: z.string(), quantity: z.number() }
+  },
+  async ({ stock, quantity }) => {
+    const result = await placeOrder(stock, "SELL", quantity);
+
+    if (result.success) {
       return {
-        content: [{ type: "text", text: "order placed successfully" }]
+        content: [
+          {
+            type: "text",
+            text: `✅ Sell order placed successfully. Order ID: ${result.order_id}`
+          }
+        ]
+      };
+    } else {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `❌ Sell order failed: ${result.error}`
+          }
+        ]
       };
     }
-  );
+  }
+);
 
 
 // Start receiving messages on stdin and sending messages on stdout
