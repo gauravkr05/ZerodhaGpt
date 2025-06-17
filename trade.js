@@ -1,33 +1,21 @@
 import { KiteConnect } from "kiteconnect";
+import { getAccessToken } from "./access_token.js";
 
-const apiKey = "bjyhcsv5keda47r9";
-// const apiSecret = "y5cvtm4sd795v9rizxhv0bcs46mebu1h";
-// const requestToken = "giiKeIDjPq350BSEhqjuCIDoERx65cUW";
+const kc = new KiteConnect({ api_key: process.env.KITE_API_KEY });
 
-let access_token="TxgqkQJFDVveBGuJaofQnzfKkUwAiq57";
+async function ensureToken() {
+  try {
+    const token = await getAccessToken();
+    kc.setAccessToken(token);
+  } catch (err) {
+    console.error("Failed to get access token:", err);
+    throw err;
+  }
+}
 
-
-
-const kc = new KiteConnect({ api_key: apiKey });
-// console.log(kc.getLoginURL());
-// async function generateAccessToken() {
-//   try {
-//     const session = await kc.generateSession(requestToken, apiSecret);
-//     console.log("✅ Access token:", session.access_token);
-//     // Optional: Save it to a file
-//     // fs.writeFileSync("access_token.txt", session.access_token);
-//   } catch (err) {
-//     console.error("❌ Failed to generate access token:", err);
-//   }
-// }
-
-// generateAccessToken();
 export async function placeOrder(tradingsymbol, transaction_type, quantity) {
   try {
-    // kc.setAccessToken(access_token);
-    // const profile = await kc.getProfile();
-    // console.log("✅ Logged in as:", profile.user_name);
-
+    await ensureToken();
     const order = await kc.placeOrder("regular", {
       exchange: "NSE",
       tradingsymbol,
@@ -37,8 +25,7 @@ export async function placeOrder(tradingsymbol, transaction_type, quantity) {
       order_type: "MARKET",
     });
 
-    // Wait a bit and fetch order status
-    await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
     const orders = await kc.getOrders();
     const placedOrder = orders.find(o => o.order_id === order.order_id);
 
@@ -64,13 +51,20 @@ export async function placeOrder(tradingsymbol, transaction_type, quantity) {
     };
   }
 }
+
 export async function getPosition() {
-  const holdings = await kc.getPosition();
-  let allHoldings = "";
-  holdings.map(holding => {
-    allHoldings += `stock: ${holding.tradingsymbol}, quantity: ${holding.quantity}, currp: ₹${holding.last_price}\n`;
-  });
-  return allHoldings;
+  try {
+    await ensureToken();
+    const holdings = await kc.getPosition();
+    let allHoldings = "";
+    holdings.map(holding => {
+      allHoldings += `stock: ${holding.tradingsymbol}, quantity: ${holding.quantity}, currp: ₹${holding.last_price}\n`;
+    });
+    return allHoldings;
+  } catch (err) {
+    console.error("❌ Error getting positions:", err.message);
+    return `Error fetching positions: ${err.message}`;
+  }
 }
 
 
