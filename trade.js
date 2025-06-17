@@ -24,9 +24,9 @@ const kc = new KiteConnect({ api_key: apiKey });
 // generateAccessToken();
 export async function placeOrder(tradingsymbol, transaction_type, quantity) {
   try {
-    kc.setAccessToken(access_token);
-    const profile = await kc.getProfile();
-    console.log("✅ Logged in as:", profile.user_name);
+    // kc.setAccessToken(access_token);
+    // const profile = await kc.getProfile();
+    // console.log("✅ Logged in as:", profile.user_name);
 
     const order = await kc.placeOrder("regular", {
       exchange: "NSE",
@@ -63,6 +63,14 @@ export async function placeOrder(tradingsymbol, transaction_type, quantity) {
       error: err.message || "Unknown error",
     };
   }
+}
+export async function getPosition() {
+  const holdings = await kc.getPosition();
+  let allHoldings = "";
+  holdings.map(holding => {
+    allHoldings += `stock: ${holding.tradingsymbol}, quantity: ${holding.quantity}, currp: ₹${holding.last_price}\n`;
+  });
+  return allHoldings;
 }
 
 

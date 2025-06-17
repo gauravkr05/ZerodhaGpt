@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { placeOrder } from "./trade.js";
+import { placeOrder, getPosition } from "./trade.js";
 import { z } from "zod";
 
 // Create an MCP server
@@ -69,7 +69,24 @@ server.registerTool(
     }
   }
 );
-
+server.registerTool(
+  "show_portfolio",
+  {
+    description: "Give me all the stock with a quantity in real time",
+    inputSchema: {}
+  },
+  async () => {
+    const positions = await getPosition();
+    return {
+      content: [
+        {
+          type: "text",
+          text: positions
+        }
+      ]
+    };
+  }
+);
 
 // Start receiving messages on stdin and sending messages on stdout
 const transport = new StdioServerTransport();
